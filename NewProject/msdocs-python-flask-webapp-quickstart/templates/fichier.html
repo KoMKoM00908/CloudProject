@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Affichage des Fichiers</title>
+</head>
+<body>
+    <h1>Liste des Fichiers</h1>
+    <ul>
+        {% for nom_fichier in noms_fichiers %}
+            <li>{{ nom_fichier }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload to Azure Blob Storage & CRUD Operations</title>
+    <style>
+         /* Style for the body */
+ body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+/* Style for headings */
+h1, h2 {
+    color: #333;
+}
+
+/* Style for file upload and download sections */
+div {
+    margin-bottom: 20px;
+}
+
+/* Style for input fields */
+input[type="file"],
+input[type="text"] {
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Style for buttons */
+button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Hover effect for buttons */
+button:hover {
+    background-color: #0056b3;
+}
+    </style>
+</head>
+<body>
+    <h1>File Upload to Azure Blob Storage</h1>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" id="fileInput">
+        <button type="submit">Upload</button>
+    </form>
+
+    
+    <form action="/afficher_fichiers" method="GET">
+        <input type="submit" value="Afficher les Fichiers" />
+    </form>
+
+    <body>
+        <h1>Download Files</h1>
+        <form action="/download" method="post">
+            <label for="files">Select a file to download:</label>
+            <select id="files" name="file">
+                {% for blob in blobs %}
+                    <option value="{{ blob.name }}">{{ blob.name }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <input type="submit" value="Download">
+        </form>
+    
+        <h1>File Information</h1>
+        <form id="crudForm">
+            <h2>Enter your file information</h2>
+            <label for="Name">Name:</label>
+            <input type="text" id="Name" name="Name" placeholder="Enter name">
+            <label for="Type">Type:</label>
+            <input type="text" id="Type" name="Type" placeholder="Enter type">
+            <label for="chemainFile">File Path:</label>
+            <input type="text" id="chemainFile" name="chemainFile" placeholder="Enter file path">
+            <button type="button" onclick="createData()">Create</button>
+        </form>
+        <table id="dataTable">
+            <!-- Your table structure to display data -->
+            <tbody id="dataBody"></tbody>
+        </table>
+
+
+
+    
+
+
+    <script>
+        // Function to fetch files from the server and display them
+        async function displayFiles() {
+            const response = await fetch('/list_files');
+            const data = await response.json();
+            const fileList = document.getElementById('fileList');
+    
+            data.forEach(fileName => {
+                const listItem = document.createElement('li');
+                listItem.textContent = fileName;
+                fileList.appendChild(listItem);
+            });
+        }
+    
+        // Function to fetch and display data from the database
+        function displayData() {
+            fetch('/select_data')  // Fetch data from Flask endpoint
+                .then(response => response.json())
+                .then(data => {
+                    var table = document.getElementById('dataTable');
+                    var tbody = document.getElementById('dataBody');
+                    tbody.innerHTML = '';
+    
+                    data.forEach(function (item) {
+                        var row = table.insertRow(-1);
+                        var cell1 = row.insertCell(0);
+                        var cell2 = row.insertCell(1);
+                        var cell3 = row.insertCell(2);
+                        cell1.innerHTML = item.Name;
+                        cell2.innerHTML = item.type;
+                        cell3.innerHTML = '<button onclick="editRow(this)">Edit</button> <button onclick="deleteRow(this)">Delete</button>';
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    
+        // Function to create new data in the database
+        function createData() {
+            var name = document.getElementById('Name').value;
+            var type = document.getElementById('Type').value;
+    
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ Name: name, type: type }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    // Clear input fields after successful insertion
+                    document.getElementById('Name').value = '';
+                    document.getElementById('Type').value = '';
+    
+                    // Clear the table before updating it with the latest data
+                    var table = document.getElementById('dataTable');
+                    var tbody = document.getElementById('dataBody');
+                    tbody.innerHTML = '';
+    
+                    // Fetch and display the updated data
+                    displayData();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        function createData() {
+            // Get values from input fields
+            var name = document.getElementById('Name').value;
+            var type = document.getElementById('Type').value;
+            var filePath = document.getElementById('chemainFile').value;
+
+            // Create a new row in the table to display the file information
+            var tableRef = document.getElementById('dataBody');
+            var newRow = tableRef.insertRow();
+
+            var cell1 = newRow.insertCell(0);
+            var cell2 = newRow.insertCell(1);
+            var cell3 = newRow.insertCell(2);
+
+            cell1.innerHTML = name;
+            cell2.innerHTML = type;
+            cell3.innerHTML = filePath;
+        }
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData();
+            var fileInput = document.getElementById('fileInput');
+            formData.append('file', fileInput.files[0]);
+    
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('File uploaded successfully!');
+                } else {
+                    alert('File upload failed!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during file upload.');
+            });
+        });
+    
+        // Call function to display files when the page loads
+        window.onload = function() {
+            displayFiles(); // Display files from Azure Blob Storage
+            displayData(); // Initially display data when the page loads
+        };
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
