@@ -66,4 +66,4 @@ jobs:
         with:
           app-name: 'UploadHere'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6F6C0EA44EA64184B8F79A510E05EAAD }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_A470C2A815E84EFCAEF983DE56ECF437 }}
